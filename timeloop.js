@@ -4,7 +4,9 @@
   Article: http://jsteam.org/timeloop-js-running-a-function-repeatedly-the-gameloop/
   License: MIT
 */
-var Timeloop = function(settings) {
+
+var Timeloop : function(settings) {
+
     this.targetFps = settings.targetFps || 60;
 //  this.callback = settings.callback;
     this.thisArg = settings.thisArg;
@@ -24,48 +26,48 @@ debugger;
 		this.execTimeHistory = [0];
 };
 
-Timeloop.prototype.start = function() {
+start : function() {
   if (! this.isRunning()) {
     this.lastCallTimeStamp = Date.now();
     this.scheduleOuterCallback();
   }
 };
 
-Timeloop.prototype.stop = function() {
+stop : function() {
   if (this.isRunning()) {
     clearTimeout(this.timeoutId);
     delete this.timeoutId;
   }
 };
 
-Timeloop.prototype.isRunning = function() {
+isRunning : function() {
   return typeof this.timeoutId !== 'undefined';
 };
 
-Timeloop.prototype.setTargetDelta = function(targetDelta) {
+setTargetDelta : function(targetDelta) {
   this.targetDelta = targetDelta;
 };
 
-Timeloop.prototype.setTargetFps = function(targetFps) {
+setTargetFps : function(targetFps) {
   this.targetDelta = this.math.fpsToDelta(targetFps);
 };
 
-Timeloop.prototype.getTargetDelta = function() {
+getTargetDelta : function() {
   return this.targetDelta;
 };
 
-Timeloop.prototype.getTargetFps = function() {
+getTargetFps : function() {
   return this.math.deltaToFps(this.targetDelta);
 };
 
-Timeloop.prototype.scheduleOuterCallback = function() {
+scheduleOuterCallback : function() {
   var _me = this;
   this.timeoutId = setTimeout(function() {
     _me.outerCallback();
   }, this.targetDelta);
 };
 
-Timeloop.prototype.outerCallback = function() {
+outerCallback : function() {
   // Schedule the next call
   this.scheduleOuterCallback();
 
@@ -88,7 +90,7 @@ Timeloop.prototype.outerCallback = function() {
   }
 };
 
-Timeloop.prototype.math = {
+math = {
   deltaToFps: function(delta) {
     return 1000.0 / delta;
   },
@@ -105,19 +107,19 @@ Timeloop.prototype.math = {
   }
 };
 
-Timeloop.prototype.getAvgDelta = function() {
+getAvgDelta : function() {
   return this.math.average(this.deltaHistory).mean;
 };
 
-Timeloop.prototype.getAvgFps = function() {
+getAvgFps : function() {
   return this.math.deltaToFps(this.getAvgDelta());
 };
 
-Timeloop.prototype.getAvgExecTime = function() {
+getAvgExecTime : function() {
   return this.math.average(this.execTimeHistory).mean;
 };
 
-Timeloop.prototype.getBenchmarkHtml = function() {
+getBenchmarkHtml : function() {
   return '\
     <span style="font-family: monospace;">\
     <b>Delta Average:&nbsp;&nbsp;&nbsp;&nbsp;</b>' + Math.round(this.getAvgDelta()) + '<br/>\
@@ -127,7 +129,7 @@ Timeloop.prototype.getBenchmarkHtml = function() {
     <b>ExecTime Average:&nbsp;</b>' + Math.round(this.getAvgExecTime()) + '</span>';
 };
 
-Timeloop.prototype.getBenchmark = function() {
+getBenchmark : function() {
   return {
     fps: Math.round(this.getAvgDelta()),
     delta: this.getTargetDelta(),

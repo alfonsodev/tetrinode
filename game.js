@@ -1,40 +1,35 @@
-var Timeloop = require('./timeloop.js');
-// Lets say we have a "game" object that contains the function we want to run repetedly:
-var game = {
-  update: function(delta) {
-    // Run the game logic here:
-    //console.log(delta)
-    console.log(JSON.stringify(game.loop.getBenchmark()));
-  }
-};
- 
-// We add a timeloop instance. The constructor will take a settings object:
-game.loop = new Timeloop({
-  targetFps: 60, // targetDelta should also be an alternative
-  callback: game.update, // We should run game.update
-  thisArg: game, // and the scope (this) should be the game object
+var nc = require('ncurses');
+var w = new nc.Window();
+
+
+for (var i=1e6, lookupTable=[]; i--;) {
+  lookupTable.push(Math.random()*41|0);
+}
+function lookup() {
+  return ++i >= lookupTable.length ? lookupTable[i=0] : lookupTable[i];
+}
+var numColors = nc.numColors;
+//1 rojo
+while(numColors--){
+	nc.colorPair(numColors, numColors, 0);
+}
+nc.showCursor=false;
+var c = 0;
+var loop = setInterval(function(){
+var x = 20;
+	w.clear();
+	while(x--){
+		w.attrset(nc.colorPair(c));
+		w.addstr(lookup(),lookup(),'laia');
+		if(c<252)c++; else c=0;
+	}
+	w.refresh();
+
+},16);
+
+process.on('SIGINT', function(){
+	clearInterval(loop);
+	w.addstr(0,0,'' + nc.maxColorPairs);
+	w.close();
 });
- 
-// Start the gameloop
-game.loop.start();
- 
-// Stop aka Pause the gameloop
-//game.loop.stop();
- 
-// Check if the gameloop is running
-// game.loop.isRunning(); // returns a boolean
- 
-// Target delta or fps can be changed later
-//game.loop.setTargetDelta(10); // 100 fps
-//game.loop.setTargetFps(60);  // 100 fps
- 
-// Those should have getters as well
-//game.loop.getTargetDelta();
-//game.loop.getTargetFps();
- 
-// We should also be able to get som benchmarking info
-//game.loop.getAvgDelta(); // The average of the recent deltas
-//game.loop.getAvgFps(); // The average of the recent fps
-//game.loop.getAvgExecTime(); // The average of the recent execution times of the callback.
-//game.loop.getBenchmarkHtml(); // Returns some html we could put in a div to see all benchmark info.
 
