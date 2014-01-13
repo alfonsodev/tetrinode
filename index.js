@@ -1,8 +1,10 @@
-var Screen = (typeof module == 'undefined')
-  ? require('./lib/Interface/Canvas');
-  : require('./lib/Interface/Ncurses');
+//var Screen = (typeof module == 'undefined')
 
+//  ? require('./lib/interface/canvas');
+//  : require('./lib/Interface/Ncurses');
 
+var Display = require('./lib/Interface');
+/*
 
 
 
@@ -65,3 +67,4 @@ var loop =  {
 
 scr.startListeningKeyEvents();
 loop.createInterval(1000);
+*/

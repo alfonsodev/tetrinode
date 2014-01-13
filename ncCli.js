@@ -21,29 +21,29 @@ var inte=  setInterval(function(){
 
 if (typeof(window)=='undefined') {
   var nc = require('ncurses');
-  var win = new nc.Window()
+  var win = new nc.window()
   var window = {};
-  nc.showCursor = false;
-//  w = new nc.Window();
-  nc.colorPair(1, 2, 3);
-  win.attrset(nc.colorPair(1));
-  window.requestAnimationFrame = function(callback) {
+  nc.showcursor = false;
+//  w = new nc.window();
+  nc.colorpair(1, 2, 3);
+  win.attrset(nc.colorpair(1));
+  window.requestanimationframe = function(callback) {
     callback();
     win.refresh();
   }
-  var Ctx = function() {
+  var ctx = function() {
     this.height=22;
     this.w = win;
-    this.fillStyle = null;
-    this.fillRect = function(x, y, w, h){
+    this.fillstyle = null;
+    this.fillrect = function(x, y, w, h){
       this.w.addstr(y,x,'x');
     };
-    this.clearCanvas=function(){
+    this.clearcanvas=function(){
       this.w.clear();
     }
  }
-  var c = new Ctx();
-  var ctx = new Ctx();
+  var c = new ctx();
+  var ctx = new ctx();
 /*  var ctx = {
     win: w,
     fillStyle: null,

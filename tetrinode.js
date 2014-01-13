@@ -36,7 +36,7 @@ module.exports = Ncurses = function() {
   debugger;
   var self = this;
   this.mainWin = new nc.Window();
-  this.bgw = new nc.Window();
+//  this.bgw = new nc.Window(12, 20);
   // KeyMap as property os now we can redefine keys "inmemory"
   // Todo: later let user save config to a file/localStorage
   this.keyMap = {
@@ -87,7 +87,7 @@ Ncurses.prototype.log = function(msg) {
   process.exit(1);
 
 };
-/*
+
 var scr = new Ncurses();
   scr.startListeningKeyEvents();
   scr.mainWin.clear();
@@ -100,7 +100,7 @@ scr.on('up', function(){
   scr.mainWin.addstr(10, 10, 'up!');
   scr.mainWin.refresh();
 });
-*/
+
 
 },{"__browserify_process":8,"events":7,"ncurses":6}],3:[function(require,module,exports){
   module.exports = require('./Ncurses');
@@ -111,7 +111,7 @@ if(typeof window == 'object') {
 },{"./Canvas":1,"./Ncurses":2}],"9WfmYM":[function(require,module,exports){
 module.exports.Interface = require('./Interface');
 
-},{"./Interface":3}],"my-m":[function(require,module,exports){
+},{"./Interface":3}],"tetrinode":[function(require,module,exports){
 module.exports=require('9WfmYM');
 },{}],6:[function(require,module,exports){
 
