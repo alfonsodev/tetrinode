@@ -191,7 +191,6 @@ var view = function() {
 }
 
 
-
 var loop =  {
   speed: 0,
   interval : null,
