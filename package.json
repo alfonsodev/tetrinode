@@ -1,0 +1,38 @@
+{
+  "name": "tetrinode",
+  "version": "0.0.0",
+  "description": "A multiplatform tetromino engine ",
+  "main": "bin/tetromino.js",
+  "bin": {
+    "tetrinode": "tetrinode.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "beautify-benchmark": "~0.2.4",
+    "benchmark": "~1.0.0",
+    "browserify": "~3.20.0",
+    "ncurses": "~0.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@bitbucket.org/alfonsodev/t.git"
+  },
+  "keywords": [
+    "tetris",
+    "ncurses",
+    "tetromino",
+    "browserify",
+    "terminal",
+    "games",
+    "ia",
+    "sockets.io"
+  ],
+  "author": "Alfonso Fernandez @alfonsodev",
+  "license": "BSD-2-Clause"
+}
