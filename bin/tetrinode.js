@@ -5,6 +5,5 @@ var scr = new Interface();
 scr.startListeningKeyEvents();
 scr.rePaint();
 scr.on('up', function() {
-  console.log('yeaaa');
 });
 
