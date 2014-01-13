@@ -26,14 +26,18 @@ Canvas.prototype.startListeningKeyEvents = function() {
   document.addEventListener("keyup", function(e) {
     self.emit('keyup');
   }, false);
-}
+};
+
+Canvas.prototype.rePaint = function() {
+  console.log('repainting');
+};
 
 },{"events":7}],2:[function(require,module,exports){
 var process=require("__browserify_process");var events = require('events');
 var nc = require('ncurses');
 
-module.exports = Ncurses = function() {
-  debugger;
+var Ncurses = function() {
+//  debugger;
   var self = this;
   this.mainWin = new nc.Window();
 //  this.bgw = new nc.Window(12, 20);
@@ -47,10 +51,11 @@ module.exports = Ncurses = function() {
   nc.colorPair(1, 2, 3);
   nc.colorPair(2, 2, 0);
   this.mainWin.attrset(nc.colorPair(1));
+
   // Clears the Terminal before exit
   process.on('SIGINT', function() {
     // clearInterval(loop.interval);
-    self.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
+//    self.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
     self.mainWin.close();
   });
 };
@@ -62,7 +67,8 @@ Ncurses.prototype = new events.EventEmitter();
  * @bg {array} Paint this array to the background window
  */
 Ncurses.prototype.rePaint = function(fg, bg) {
-  scr.mainWin.clear();
+  this.mainWin.clear();
+  this.mainWin.frame('main', 'win');
   this.mainWin.refresh();
 };
 
@@ -79,15 +85,14 @@ Ncurses.prototype.startListeningKeyEvents = function() {
     } 
   });
 };
-
 Ncurses.prototype.log = function(msg) {
   this.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
   this.mainWin.close();
   console.log(msg);
   process.exit(1);
-
 };
-
+module.exports = Ncurses;
+/*
 var scr = new Ncurses();
   scr.startListeningKeyEvents();
   scr.mainWin.clear();
@@ -101,6 +106,7 @@ scr.on('up', function(){
   scr.mainWin.refresh();
 });
 
+*/
 
 },{"__browserify_process":8,"events":7,"ncurses":6}],3:[function(require,module,exports){
   module.exports = require('./Ncurses');
@@ -111,7 +117,7 @@ if(typeof window == 'object') {
 },{"./Canvas":1,"./Ncurses":2}],"9WfmYM":[function(require,module,exports){
 module.exports.Interface = require('./Interface');
 
-},{"./Interface":3}],"tetrinode":[function(require,module,exports){
+},{"./Interface":3}],"lib":[function(require,module,exports){
 module.exports=require('9WfmYM');
 },{}],6:[function(require,module,exports){
 

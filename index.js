@@ -1,13 +1,17 @@
-//var Screen = (typeof module == 'undefined')
-
+#!/usr/bin/env node
+// var Screen = (typeof module == 'undefined')
 //  ? require('./lib/interface/canvas');
 //  : require('./lib/Interface/Ncurses');
+if(typeof window == 'object') {
+  var Interface = require('tetrinode').Interface;
+} else {
+  var Interface = require('./lib/Interface');
+}
+var scr = new Interface();
+console.log('here');
 
-var Display = require('./lib/Interface');
+
 /*
-
-
-
 var scr = new Screen();
 var box = {
   x: 1,
