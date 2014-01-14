@@ -1,13 +1,26 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+process = {
+  on: function(){}
+};
 var events = require('events');
 module.exports = Canvas = function() {
+  //Back an foreground canvas context declaration
+  var bgCanvas = document.getElementById('background');
+//  var fgCanvas = document.getElementById('foreground');
+  this.bgctx = bgCanvas.getContext('2d');
+ // this.fgctx = bgCanvas.getContext('2d');
+
+  //Initial colors
+ // this.fgctx.fillStyle="#000066";
+  this.bgctx.fillStyle="#006600";
+
+  //Input
   this.keyMap = {
     '38': 'up',
     '40': 'down',
     '37': 'left',
     '39': 'right'
   };
-  console.log('Browser constructor');
 };
 
 Canvas.prototype = new events.EventEmitter();
@@ -28,11 +41,31 @@ Canvas.prototype.startListeningKeyEvents = function() {
   }, false);
 };
 
-Canvas.prototype.render = function() {
+Canvas.prototype.render = function(bg) {
+  var self = this;
+  this.width = this.width; // Trick to clean canvas faster #performance
   requestAnimationFrame(function(){
-    console.log(new Date().toString());
+    self.printObject(bg);
+    //console.log(new Date().toString());
   });
 };
+
+Canvas.prototype.printObject = function(pObject) {
+    var posX = pObject.posX || 0;
+    var posY =  pObject.posY || 0;
+    var matrix = pObject.getMatrix() || [0];
+    var x=0, y=0;
+    y = matrix.length ;
+    while(y--) {
+      x = matrix[0].length;
+      while(x--) {
+        if (matrix[y][x]!=0) {
+          this.bgctx.fillRect((posX+x)*10, (posY+y)*10, 10, 10); // Paint the box
+        }
+      }
+    }
+};
+
 
 
 },{"events":9}],2:[function(require,module,exports){
@@ -40,10 +73,9 @@ var process=require("__browserify_process");var events = require('events');
 var nc = require('ncurses');
 
 var Ncurses = function() {
-//  debugger;
   var self = this;
   this.mainWin = new nc.Window();
-//  this.bgw = new nc.Window(12, 20);
+  // this.bgw = new nc.Window(12, 20);
   // KeyMap as property os now we can redefine keys "inmemory"
   // Todo: later let user save config to a file/localStorage
   this.keyMap = {
@@ -62,16 +94,16 @@ var Ncurses = function() {
 };
 
 Ncurses.prototype = new events.EventEmitter();
+
 /*
  * rePaint
  * @fg {array} Paint this array to the foreground window
  * @bg {array} Paint this array to the background window
  */
-Ncurses.prototype.render = function(fg, bg) {
+Ncurses.prototype.render = function(bg, fg) {
   this.mainWin.clear();
-//  this.mainWin.frame('main', 'win');
-  this.print(fg);
-  this.mainWin.addstr(20,0,new Date().getMilliseconds().toString());
+  this.print(bg);
+  
   this.mainWin.refresh();
 };
 
@@ -123,20 +155,20 @@ Ncurses.prototype.print = function(pObject, transparent) {
 };
 
 module.exports = Ncurses;
+
 /*
-var scr = new Ncurses();
-  scr.startListeningKeyEvents();
-  scr.mainWin.clear();
-  scr.mainWin.addstr(0, 0, 'up!');
-  scr.mainWin.refresh();
+  var scr = new Ncurses();
+    scr.startListeningKeyEvents();
+    scr.mainWin.clear();
+    scr.mainWin.addstr(0, 0, 'up!');
+    scr.mainWin.refresh();
 
-scr.on('up', function(){
-  scr.log('up!');
-  scr.mainWin.clear();
-  scr.mainWin.addstr(10, 10, 'up!');
-  scr.mainWin.refresh();
-});
-
+  scr.on('up', function(){
+    scr.log('up!');
+    scr.mainWin.clear();
+    scr.mainWin.addstr(10, 10, 'up!');
+    scr.mainWin.refresh();
+  });
 */
 
 },{"__browserify_process":11,"events":9,"ncurses":8}],3:[function(require,module,exports){
@@ -177,6 +209,7 @@ module.exports = Loop;
 },{}],5:[function(require,module,exports){
 var events = require('events'),
     util = require('util');
+
 var Tetromino = function(pType, pPosX, pPosY) {
     this.posX = pPosX || 5;
     this.posY = pPosY || 0;
@@ -184,7 +217,7 @@ var Tetromino = function(pType, pPosX, pPosY) {
     this.type = pType || 0;
     this.orientation = 0;
     this.color = 6;
-    //SRS rotation system
+    // SRS rotation system
     this.grid = [
         [
             [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I 6 pos 3
@@ -230,10 +263,12 @@ var Tetromino = function(pType, pPosX, pPosY) {
         ]
     ];
 };
+
 Tetromino.prototype = new events.EventEmitter();
 Tetromino.prototype.getMatrix = function() {
     return this.grid[this.type][this.orientation];
 };
+
 Tetromino.prototype.rotate = function(pClockWise) {
     if (typeof pClockWise === "undefined") { pClockWise = true; }
     if(pClockWise === true || pClockWise === 'undefined') {
