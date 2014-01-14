@@ -10,7 +10,7 @@ module.exports = Canvas = function() {
   this.fgCanvas = document.getElementById('foreground');
   this.bgctx = this.bgCanvas.getContext('2d');
   this.fgctx = this.fgCanvas.getContext('2d');
-
+  this.pressed = null;
   //Initial colors
   this.fgctx.fillStyle="#000066";
   this.bgctx.fillStyle="#006600";
@@ -37,9 +37,8 @@ Canvas.prototype.startListeningKeyEvents = function() {
   document.addEventListener("keydown", function(e) {
     if(self.keyMap[e.keyCode]) {
       self.emit('keydown', self.keyMap[e.keyCode]);
+      self.pressed = self.keyMap[e.keyCode];
     }
-//    if(!this.blockKeys) self.emit(self.keyMap[e.keyCode]);
-//    self.lastKey = self.keyMap[e.keyCode];
   }, false);
 
   document.addEventListener("keyup", function(e) {
@@ -216,57 +215,43 @@ var Logic = function(scr, field, tetro, loop) {
   this.scr.startListeningKeyEvents();
   this.scr.render(this.field, this.tetro);
   this.loop.createInterval(1000, this.gameStep.bind(this));
-/*
-  document.addEventListener("keydown", function(e) {
-    if (e.keyCode == 40 && loop.speed!=70) {
-        loop.createInterval(70);
-    }
-  }, false);
-*/
+
+  //Accelerate the game on Keydown
   this.scr.on('keydown', (function(key) {
-    if(this.loop.speed != this.fast)
+    if(this.loop.speed != this.fast) {
       this.loop.createInterval(this.fast, this.gameStep.bind(this));
+    }      
   }).bind(this));
+  //Slow it down again on keyup
   this.scr.on('keyup', (function(){
     this.loop.createInterval(this.slow, this.gameStep.bind(this));
   }).bind(this));
 
-/*
-  document.addEventListener("keyup", function(e) {
-    if (loop.speed!=1000) {
-        loop.createInterval(1000);
-    }
-
-  }, false);
-*/
-  /*
-  this.scr.on('down', (function() {
-    if(this.loop.keyUp) { clearInterval(this.loop.keyUp); }
-    this.loop.createInterval(this.fast, this.gameStep.bind(this));
-    this.loop.keyUp = setTimeout((function() { 
-      this.loop.createInterval(this.slow, this.gameStep.bind(this)); 
-    }).bind(this) , this.fast + 15);
-  }).bind(this));
-*/
   this.scr.on('up', function() { console.log('hello'); });
 };
 
 Logic.prototype.gameStep = function(){
-  console.log(new Date().toString())
+  // Call the function with pressed key name
+  if(this.scr.pressed){
+    this[this.scr.pressed]();
+  }
+  this.scr.render(null, this.tetro);
+//  console.log(new Date().toString())
 };
 
 Logic.prototype.down = function() {
-//  console.log('down')
-
+  console.log('down')
 };
 
+Logic.prototype.up= function() {
+  console.log('up');
+};
+
+
 Logic.prototype.right = function() {
-  console.log('right');
-//  this.scr.blockKeys = true;
   if(this.field.collideRight(this.tetro) === false) {
     this.tetro.posX++;
   }
- // this.scr.blockKeys = false;
 };
 
 Logic.prototype.left = function() {
@@ -299,7 +284,6 @@ var Loop =  function() {
  *
  */
 Loop.prototype.createInterval = function(speed, callback) {
-  console.log('creating inteval' + speed);
   if(this.interval) clearInterval(this.interval);
   this.speed = speed;
   this.interval = setInterval((function() {
@@ -346,7 +330,7 @@ Playfield.prototype.collideLeft = function(tetri) {
         var j = len;
         while(j--) {
             if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX-1) + j] === 1) {
+                this.matrix[tetri.posY + i][(tetri.posX) + j] === 1) {
                 return true;
             }
         }
@@ -361,7 +345,7 @@ Playfield.prototype.collideRight = function(tetri) {
         var j = len;
         while(j--) {
             if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX+1) + j] === 1) {
+                this.matrix[tetri.posY + i][(tetri.posX+2) + j] === 1) {
                 return true;
             }
         }
@@ -446,6 +430,7 @@ Playfield.prototype.clearComplete = function() {
     return false;
 };
 module.exports = Playfield;
+
 },{"events":11,"util":15}],7:[function(require,module,exports){
 var events = require('events'),
     util = require('util');
