@@ -6,6 +6,7 @@ var Loop = require('lib').Loop;
 var scr = new Interface();
 var loop = new Loop();
 
+//Todo:Change this class with the origin Playground
 var pg = {
   posX:0,
   posY:0,
@@ -40,13 +41,16 @@ var pg = {
     ];
   }
 };
+
+var tetro = new Tetromino(2, 0, 0);
+
 scr.startListeningKeyEvents();
-scr.render(pg);
+scr.render(tetro);
 var logic = function() {
   
 };
 var gameStep = function() {
-  scr.render(pg, true);
+  scr.render(tetro, true);
 };
 // loop.createInterval(1000, gameStep);
 
