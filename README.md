@@ -10,6 +10,7 @@ A tetris clone written in javascript that works in your **Terminal** and in your
     npm install
 
 ##Play!  
+**Controls**: Use the cursor arrors, left, right, down, and up for rotate.  
 ### in your terminal  
     make play  
 
