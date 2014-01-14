@@ -10,7 +10,6 @@ module.exports = Canvas = function() {
   this.fgCanvas = document.getElementById('foreground');
   this.bgctx = this.bgCanvas.getContext('2d');
   this.fgctx = this.fgCanvas.getContext('2d');
-  this.pressed = null;
   //Initial colors
   this.fgctx.fillStyle="#000066";
   this.bgctx.fillStyle="#006600";
@@ -38,7 +37,6 @@ Canvas.prototype.startListeningKeyEvents = function() {
     if(!self.blockKeys) {
       if(self.keyMap[e.keyCode]) {
         self.emit('keydown', self.keyMap[e.keyCode]);
-        self.pressed = self.keyMap[e.keyCode];
       }
     }
   }, false);
@@ -55,7 +53,7 @@ Canvas.prototype.render = function(bg, fg) {
     this.printBgObject(bg);
   if(fg)
     this.printFgObject(fg);
-  //requestAnimationFrame(self.render);
+ // requestAnimationFrame(self.render);
 };
 
 Canvas.prototype.printBgObject = function(pObject) {
@@ -108,14 +106,12 @@ var Ncurses = function() {
     '259': 'up', '258': 'down', '260': 'left', '261': 'right'
   };
   this.colorMap = { blue:1, red:2, yellow:3, gree:4 };
+  nc.showCursor = false;
+  nc.colorPair(1, 5, 3);
 
-  nc.showcursor = false;
-  nc.colorPair(1, nc.colors.BLACK, nc.colors.BLUE);
-  nc.colorPair(2, nc.colors.BLACK, nc.colors.RED);
-  nc.colorPair(3, nc.colors.BLACK, nc.colors.YELLOW);
-  nc.colorPair(4, nc.colors.BLACK, nc.colors.GREEN);
 
   this.mainWin.attrset(nc.colorPair(1));
+//  this.mainWin.attrset(nc.colorPair(2));
 };
 
 Ncurses.prototype = new events.EventEmitter();
@@ -127,8 +123,9 @@ Ncurses.prototype = new events.EventEmitter();
  */
 Ncurses.prototype.render = function(bg, fg) {
   this.mainWin.clear();
-  this.print(bg);
-  
+  this.printBgObject(bg);
+  this.printFgObject(fg);
+//  this.print(fg); 
   this.mainWin.refresh();
 };
 
@@ -163,37 +160,56 @@ Ncurses.prototype.print = function(pObject, transparent) {
     var color = this.colorMap[pObject.color] || 7;
     var i=0, j=0;
     var transparent = transparent || true;
+    //this.mainWin.attrset(nc.colorPair(2));
     for (i=0; i < matrix.length; i++) {
         for (j=0; j < matrix[i].length; j++) {
             if (matrix[i][j]===0) {
                 if(!transparent) { //if printing playboard
-                    this.mainWin.attrset(nc.colorPair(2));
                     this.mainWin.addstr(posY+i, posX+j, ' ');
                 }
             } else {
                 if(!transparent) color = pObject.colorMap[posY+i][posX+j];
                 this.mainWin.attrset(nc.colorPair(color));
-                this.mainWin.addstr(posY+i,posX+j, '-');
+                this.mainWin.addstr(posY+i,posX+j, ' ');
             }
         }
     }
 };
 
-module.exports = Ncurses;
-/*
-  var scr = new Ncurses();
-    scr.startListeningKeyEvents();
-    scr.mainWin.clear();
-    scr.mainWin.addstr(0, 0, 'up!');
-    scr.mainWin.refresh();
+Ncurses.prototype.printBgObject = function(pObject) {
+    var posX = pObject.posX || 0;
+    var posY =  pObject.posY || 0;
+    var matrix = pObject.getMatrix() || [0];
+    var x=0, y=0;
+    y = matrix.length;
+    while(y--) {
+      x = matrix[0].length;
+      while(x--) {
+        if (matrix[y][x]!=0) {
+          this.mainWin.addstr(posY+y, posX+x, ' ');
+        }
+      }
+    }
+};
 
-  scr.on('up', function(){
-    scr.log('up!');
-    scr.mainWin.clear();
-    scr.mainWin.addstr(10, 10, 'up!');
-    scr.mainWin.refresh();
-  });
-*/
+Ncurses.prototype.printFgObject = function(pObject) {
+  var posX = pObject.posX || 0;
+  var posY =  pObject.posY || 0;
+  var matrix = pObject.getMatrix() || [0];
+  var x=0, y=0;
+  y = matrix.length;
+  while(y--) {
+    x = matrix[0].length;
+    while(x--) {
+      if (matrix[y][x]!=0) {
+        this.mainWin.addstr(posY+y, posX+x, ' ');
+      }
+    }
+  }
+};
+
+module.exports = Ncurses;
+
 
 },{"__browserify_process":13,"events":11,"ncurses":10}],3:[function(require,module,exports){
   module.exports = require('./Ncurses');
