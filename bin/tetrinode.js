@@ -12,12 +12,6 @@ var tetro = new Tetromino(2, 0, 0);
 var logic = new Logic(scr, field, tetro, loop);
 
 
-// if(loop.keyup) clearTimeout(loop.keyup)
-// if(keyUp) clearInterval(keyUp);
-/*
-    }
-*/
-
 /*
  * In tetris keydown is special because it acelerates the game.
  */
