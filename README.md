@@ -2,7 +2,7 @@ Tetrinode
 =========
 A tetris clone written in javascript that works in your **Terminal** and in your **Browser**.  
 
-![tetrinode](https://github.com/alfonsodev/tetrinode/blob/master/tetrinode.gif)  
+[![tetrinode](https://github.com/alfonsodev/tetrinode/blob/master/tetrinode.gif)]
 
 ##Install:
     git clone git@github.com:alfonsodev/tetrinode.git
