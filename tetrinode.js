@@ -116,7 +116,6 @@ var Ncurses = function() {
   nc.colorPair(4, nc.colors.BLACK, nc.colors.GREEN);
 
   this.mainWin.attrset(nc.colorPair(1));
-
 };
 
 Ncurses.prototype = new events.EventEmitter();
@@ -133,7 +132,6 @@ Ncurses.prototype.render = function(bg, fg) {
   this.mainWin.refresh();
 };
 
-
 /*
  *
  */
@@ -142,10 +140,11 @@ Ncurses.prototype.startListeningKeyEvents = function() {
   var self = this;
   this.mainWin.on('inputChar', function(charKey, charNum, isKey) {
     if(!this.blockKey && self.keyMap[charNum]) {
-      self.emit(self.keyMap[charNum]);  
+      self.emit(self.keyMap[charNum]);
     } 
   });
 };
+
 Ncurses.prototype.log = function(msg) {
   this.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
   this.mainWin.close();
@@ -181,7 +180,6 @@ Ncurses.prototype.print = function(pObject, transparent) {
 };
 
 module.exports = Ncurses;
-
 /*
   var scr = new Ncurses();
     scr.startListeningKeyEvents();
@@ -222,21 +220,13 @@ var Logic = function(scr, field, tetro, loop) {
   //Accelerate the game on Keydown
   this.scr.on('keydown', (function(key) {
     //block more keys until next step is done
-    this.scr.blockKeys = true;
+//    this.scr.blockKeys = true;
     this.action = key;
     if(this.loop.speed != this.fast) {
       this.loop.createInterval(this.fast, this.gameStep.bind(this));
     }      
   }).bind(this));
   //Slow it down again on keyup
-  this.scr.on('keyup', (function(){
-    //before going back to slow, let the last step execute in fastMode
-    setTimeout((function() { 
-      //now back to the slow
-      this.loop.createInterval(this.slow, this.gameStep.bind(this));
-    }).bind(this), this.fast);
-  }).bind(this));
-  this.scr.on('up', function() { console.log('hello'); });
 };
 
 Logic.prototype.gameStep = function(){
@@ -245,9 +235,14 @@ Logic.prototype.gameStep = function(){
     console.log(this.action);
     this[this.action]();
     this.action = null;
-    this.scr.blockKeys = false;
+  } else {
+    this.down();
+    if(this.loop.speed == this.fast)
+    this.loop.createInterval(this.slow, this.gameStep.bind(this));
   }
+  this.field.clearComplete();
   this.scr.render(this.field, this.tetro);
+ // this.scr.blockKeys = false;
 };
 
 Logic.prototype.down = function() {
@@ -265,6 +260,7 @@ Logic.prototype.down = function() {
 
 Logic.prototype.up = function() {
   console.log('up');
+  this.tetro.rotate(false);
 };
 
 
@@ -348,7 +344,7 @@ Playfield.prototype.collideLeft = function(tetri) {
         var j = len;
         while(j--) {
             if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX) + j] === 1) {
+                this.matrix[tetri.posY + i][(tetri.posX-1) + j] === 1) {
                 return true;
             }
         }
@@ -363,7 +359,7 @@ Playfield.prototype.collideRight = function(tetri) {
         var j = len;
         while(j--) {
             if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX+2) + j] === 1) {
+                this.matrix[tetri.posY + i][(tetri.posX+1) + j] === 1) {
                 return true;
             }
         }
@@ -448,7 +444,6 @@ Playfield.prototype.clearComplete = function() {
     return false;
 };
 module.exports = Playfield;
-
 },{"events":11,"util":15}],7:[function(require,module,exports){
 var events = require('events'),
     util = require('util');

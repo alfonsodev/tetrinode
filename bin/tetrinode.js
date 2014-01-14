@@ -15,7 +15,8 @@ var logic = new Logic(scr, field, tetro, loop);
 /*
  * In tetris keydown is special because it acelerates the game.
  */
-//This only happends on the Terminal 
+
+// This only happends on the Terminal 
 process.on('SIGINT', function() {
   clearInterval(loop.interval);
   scr.close();
