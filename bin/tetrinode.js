@@ -5,7 +5,7 @@ var Tetromino = require('lib').Tetromino;
 var Playfield = require('lib').Playfield;
 var Loop = require('lib').Loop;
 var Logic = require('lib').Logic;
-var io = require('lib').io;
+//var io = require('lib').io;
 
 var scr = new Interface();
 var loop = new Loop();
@@ -23,17 +23,3 @@ process.on('SIGINT', function() {
   clearInterval(loop.interval);
   scr.close();
 });
-
-var socket = io.connect('http://127.0.0.1:3000');
-socket.on('connect', function() {
-
-  socket.on('gameStep', function(data) {
-    console.log(data);
-  });
-
-  socket.on('disconnect', function(){
-
-  });
-
-});
-
