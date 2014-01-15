@@ -91,130 +91,13 @@ Canvas.prototype.printFgObject = function(pObject) {
 };
 
 
-},{"events":11}],2:[function(require,module,exports){
-var process=require("__browserify_process");var events = require('events');
-var nc = require('ncurses');
-
-var Ncurses = function() {
-  var self = this;
-  this.blockKeys = false;
-  this.mainWin = new nc.Window();
-  // this.bgw = new nc.Window(12, 20);
-  // KeyMap as property os now we can redefine keys "inmemory"
-  // Todo: later let user save config to a file/localStorage
-  this.keyMap = {
-    '259': 'up', '258': 'down', '260': 'left', '261': 'right'
-  };
-  this.colorMap = { blue:1, red:2, yellow:3, gree:4 };
-  nc.showCursor = false;
-  nc.colorPair(1, 5, 3);
-
-  this.mainWin.attrset(nc.colorPair(1));
-};
-
-Ncurses.prototype = new events.EventEmitter();
-
-/*
- * rePaint
- * @fg {array} Paint this array to the foreground window
- * @bg {array} Paint this array to the background window
- */
-Ncurses.prototype.render = function(bg, fg) {
-  this.mainWin.clear();
-  this.printBgObject(bg);
-  this.printFgObject(fg);
-//  this.print(fg); 
-  this.mainWin.refresh();
-};
-
-/*
- *
- */
-Ncurses.prototype.startListeningKeyEvents = function() {
-  var self = this;
-  this.mainWin.on('inputChar', function(charKey, charNum, isKey) {
-    if(self.keyMap[charNum]) {
-      self.emit('keydown', self.keyMap[charNum]);
-    } 
-  });
-};
-
-Ncurses.prototype.log = function(msg) {
-  this.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
-  this.mainWin.close();
-  console.log(msg);
-  process.exit(0);
-};
-
-Ncurses.prototype.close = function(){
-  this.mainWin.close();
-}
-
-Ncurses.prototype.print = function(pObject, transparent) {
-    var posX = pObject.posX || 0;
-    var posY =  pObject.posY || 0;
-    var matrix = pObject.getMatrix() || [0];
-    var color = this.colorMap[pObject.color] || 7;
-    var i=0, j=0;
-    var transparent = transparent || true;
-    //this.mainWin.attrset(nc.colorPair(2));
-    for (i=0; i < matrix.length; i++) {
-        for (j=0; j < matrix[i].length; j++) {
-            if (matrix[i][j]===0) {
-                if(!transparent) { //if printing playboard
-                    this.mainWin.addstr(posY+i, posX+j, ' ');
-                }
-            } else {
-                if(!transparent) color = pObject.colorMap[posY+i][posX+j];
-                this.mainWin.attrset(nc.colorPair(color));
-                this.mainWin.addstr(posY+i,posX+j, ' ');
-            }
-        }
-    }
-};
-
-Ncurses.prototype.printBgObject = function(pObject) {
-    var posX = pObject.posX || 0;
-    var posY =  pObject.posY || 0;
-    var matrix = pObject.getMatrix() || [0];
-    var x=0, y=0;
-    y = matrix.length;
-    while(y--) {
-      x = matrix[0].length;
-      while(x--) {
-        if (matrix[y][x]!=0) {
-          this.mainWin.addstr(posY+y, posX+x, ' ');
-        }
-      }
-    }
-};
-
-Ncurses.prototype.printFgObject = function(pObject) {
-  var posX = pObject.posX || 0;
-  var posY =  pObject.posY || 0;
-  var matrix = pObject.getMatrix() || [0];
-  var x=0, y=0;
-  y = matrix.length;
-  while(y--) {
-    x = matrix[0].length;
-    while(x--) {
-      if (matrix[y][x]!=0) {
-        this.mainWin.addstr(posY+y, posX+x, ' ');
-      }
-    }
-  }
-};
-
-module.exports = Ncurses;
-
-
-},{"__browserify_process":13,"events":11,"ncurses":10}],3:[function(require,module,exports){
+},{"events":10}],2:[function(require,module,exports){
   module.exports = require('./Ncurses');
 if(typeof window == 'object') {
   module.exports = require('./Canvas');
 }
 
-},{"./Canvas":1,"./Ncurses":2}],4:[function(require,module,exports){
+},{"./Canvas":1,"./Ncurses":9}],3:[function(require,module,exports){
 var Logic = function(scr, field, tetro, loop) {
   this.scr = scr;
   this.field = field;
@@ -292,7 +175,7 @@ Logic.prototype.left = function() {
 
 module.exports = Logic;
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*
  * Loop
  * Game loop class
@@ -320,7 +203,7 @@ Loop.prototype.createInterval = function(speed, callback) {
 
 module.exports = Loop;
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var events = require('events'),
     util = require('util');
 
@@ -457,7 +340,7 @@ Playfield.prototype.clearComplete = function() {
     return false;
 };
 module.exports = Playfield;
-},{"events":11,"util":15}],7:[function(require,module,exports){
+},{"events":10,"util":14}],6:[function(require,module,exports){
 var events = require('events'),
     util = require('util');
 
@@ -542,7 +425,7 @@ Tetromino.prototype.getColor = function() {
 
 module.exports = Tetromino;
 
-},{"events":11,"util":15}],"9WfmYM":[function(require,module,exports){
+},{"events":10,"util":14}],"uM18kj":[function(require,module,exports){
 module.exports.Interface = require('./Interface');
 module.exports.Playfield = require('./Playfield');
 module.exports.Tetromino = require('./Tetromino');
@@ -550,11 +433,11 @@ module.exports.Loop = require('./Loop');
 module.exports.Logic = require('./Logic');
 
 
-},{"./Interface":3,"./Logic":4,"./Loop":5,"./Playfield":6,"./Tetromino":7}],"lib":[function(require,module,exports){
-module.exports=require('9WfmYM');
-},{}],10:[function(require,module,exports){
+},{"./Interface":2,"./Logic":3,"./Loop":4,"./Playfield":5,"./Tetromino":6}],"lib":[function(require,module,exports){
+module.exports=require('uM18kj');
+},{}],9:[function(require,module,exports){
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -856,7 +739,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -881,7 +764,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -936,14 +819,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var process=require("__browserify_process"),global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1531,4 +1414,4 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":14,"__browserify_process":13,"inherits":12}]},{},[])
+},{"./support/isBuffer":13,"__browserify_process":12,"inherits":11}]},{},[])
