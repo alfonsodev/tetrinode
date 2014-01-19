@@ -1,18 +1,15 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-// mock node.js process.on 
-process = {
-  on: function(){}
-};
+'use strict';
 var events = require('events');
-module.exports = Canvas = function() {
+var Canvas = function() {
   this.blockKeys = false;
   this.bgCanvas = document.getElementById('background');
   this.fgCanvas = document.getElementById('foreground');
   this.bgctx = this.bgCanvas.getContext('2d');
   this.fgctx = this.fgCanvas.getContext('2d');
   //Initial colors
-  this.fgctx.fillStyle="#000066";
-  this.bgctx.fillStyle="#006600";
+  this.fgctx.fillStyle = '#000066';
+  this.bgctx.fillStyle = '#006600';
 
   //Input
   this.keyMap = {
@@ -24,81 +21,196 @@ module.exports = Canvas = function() {
   this.lastKey = null;
 };
 
+module.exports = Canvas;
+
 Canvas.prototype = new events.EventEmitter();
 
-Canvas.prototype.hello = function(){
+Canvas.prototype.hello = function() {
   console.log('I\'m browser');
 };
 
 Canvas.prototype.startListeningKeyEvents = function() {
-  console.log('starting listnening')
-  var self = this;
-  document.addEventListener("keydown", function(e) {
-    if(!self.blockKeys) {
-      if(self.keyMap[e.keyCode]) {
-        self.emit('keydown', self.keyMap[e.keyCode]);
+  console.log('starting listnening');
+  document.addEventListener('keydown', function(e) {
+    if (!this.blockKeys) {
+      if (this.keyMap[e.keyCode]) {
+        this.emit('keydown', this.keyMap[e.keyCode]);
       }
     }
-  }, false);
-
-
-  document.addEventListener("keyup", function(e) {
-    self.emit('keyup');
-  }, false);
+  }.bind(this), false);
+  //TODO: this is candidate to be deleted
+  document.addEventListener('keyup', function(e) {
+    this.emit('keyup');
+  }.bind(this), false);
 };
 
 Canvas.prototype.render = function(bg, fg) {
-  var self = this;
-  if(bg)
-    this.printBgObject(bg);
-  if(fg)
-    this.printFgObject(fg);
- // requestAnimationFrame(self.render);
+  if (bg) this.printBgObject(bg);
+  if (fg) this.printFgObject(fg);
+  // requestAnimationFrame(this.render);
 };
 
 Canvas.prototype.printBgObject = function(pObject) {
-    this.bgCanvas.width = this.bgCanvas.width; // Trick to clean canvas faster #performance
-    var posX = pObject.posX || 0;
-    var posY =  pObject.posY || 0;
-    var matrix = pObject.getMatrix() || [0];
-    var x=0, y=0;
-    y = matrix.length;
-    while(y--) {
-      x = matrix[0].length;
-      while(x--) {
-        if (matrix[y][x]!=0) {
-          this.bgctx.fillRect((posX+x)*10, (posY+y)*10, 10, 10); // Paint the box
-        }
-      }
-    }
-};
-
-Canvas.prototype.printFgObject = function(pObject) {
-  this.fgCanvas.width = this.fgCanvas.width; // Trick to clean canvas faster #performance
   var posX = pObject.posX || 0;
-  var posY =  pObject.posY || 0;
+  var posY = pObject.posY || 0;
   var matrix = pObject.getMatrix() || [0];
-  var x=0, y=0;
+  var x = 0, y = 0;
+  // Trick to clean canvas faster #performance
   y = matrix.length;
-  while(y--) {
+  this.bgCanvas.width = this.bgCanvas.width;
+  while (y--) {
     x = matrix[0].length;
-    while(x--) {
-      if (matrix[y][x]!=0) {
-        this.fgctx.fillRect((posX+x)*10, (posY+y)*10, 10, 10); // Paint the box
+    while (x--) {
+      if (matrix[y][x] != 0) {
+        this.bgctx.fillRect((posX + x) * 10, (posY + y) * 10, 10, 10);
       }
     }
   }
 };
 
+Canvas.prototype.printFgObject = function(pObject) {
+  var posX = pObject.posX || 0;
+  var posY = pObject.posY || 0;
+  var matrix = pObject.getMatrix() || [0];
+  var x = 0, y = 0;
+  // Trick to clean canvas faster #performance
+  this.fgCanvas.width = this.fgCanvas.width;
+  y = matrix.length;
+  while (y--) {
+    x = matrix[0].length;
+    while (x--) {
+      if (matrix[y][x] != 0) {
+        this.fgctx.fillRect((posX + x) * 10, (posY + y) * 10, 10, 10);
+      }
+    }
+  }
+};
 
-},{"events":10}],2:[function(require,module,exports){
+// mock node.js process.on
+process = {
+  on: function() {}
+};
+
+},{"events":11}],2:[function(require,module,exports){
+var process=require("__browserify_process");'use strict';
+var events = require('events');
+var nc = require('ncurses');
+
+var Ncurses = function() {
+  var self = this;
+  this.blockKeys = false;
+  this.mainWin = new nc.Window();
+  // this.bgw = new nc.Window(12, 20);
+  // KeyMap as property os now we can redefine keys "inmemory"
+  // Todo: later let user save config to a file/localStorage
+  this.keyMap = {
+  '259': 'up', '258': 'down', '260': 'left', '261': 'right'
+  };
+  this.colorMap = { blue: 1, red: 2, yellow: 3, gree: 4 };
+  nc.showCursor = false;
+  nc.colorPair(1, 5, 3);
+
+  this.mainWin.attrset(nc.colorPair(1));
+};
+
+Ncurses.prototype = new events.EventEmitter();
+
+/*
+ * rePaint
+ * @fg {array} Paint this array to the foreground window
+ * @bg {array} Paint this array to the background window
+ */
+Ncurses.prototype.render = function(bg, fg) {
+  this.mainWin.clear();
+  this.printBgObject(bg);
+  this.printFgObject(fg);
+//  this.print(fg);
+  this.mainWin.refresh();
+};
+
+Ncurses.prototype.startListeningKeyEvents = function() {
+  var self = this;
+  this.mainWin.on('inputChar', function(charKey, charNum, isKey) {
+    if (self.keyMap[charNum]) {
+      self.emit('keydown', self.keyMap[charNum]);
+    }
+  });
+};
+
+Ncurses.prototype.log = function(msg) {
+  this.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
+  this.mainWin.close();
+  console.log(msg);
+  process.exit(0);
+};
+
+Ncurses.prototype.close = function() {
+  this.mainWin.close();
+};
+
+Ncurses.prototype.print = function(pObject, transparent) {
+  var posX = pObject.posX || 0;
+  var posY = pObject.posY || 0;
+  var matrix = pObject.getMatrix() || [0];
+  var color = this.colorMap[pObject.color] || 7;
+  var i = 0, j = 0;
+  var transparent = transparent || true;
+  //this.mainWin.attrset(nc.colorPair(2));
+  for (i = 0; i < matrix.length; i++) {
+    for (j = 0; j < matrix[i].length; j++) {
+      if (matrix[i][j] !== 0) {
+        if (!transparent) color = pObject.colorMap[posY + i][posX + j];
+        this.mainWin.attrset(nc.colorPair(color));
+        this.mainWin.addstr(posY + i, posX + j, ' ');
+      }
+    }
+  }
+};
+
+Ncurses.prototype.printBgObject = function(pObject) {
+  var posX = pObject.posX || 0;
+  var posY = pObject.posY || 0;
+  var matrix = pObject.getMatrix() || [0];
+  var x = 0, y = 0;
+  y = matrix.length;
+  while (y--) {
+    x = matrix[0].length;
+    while (x--) {
+      if (matrix[y][x] != 0) {
+        this.mainWin.addstr(posY + y, posX + x, ' ');
+      }
+    }
+    this.mainWin.refresh();
+  }
+};
+
+Ncurses.prototype.printFgObject = function(pObject, flag) {
+  var posX = pObject.posX || 0;
+  var posY = pObject.posY || 0;
+  var matrix = pObject.getMatrix() || [0];
+  var x = 0, y = 0;
+  y = matrix.length;
+  while (y--) {
+    x = matrix[0].length;
+    while (x--) {
+      if (matrix[y][x] != 0) {
+        this.mainWin.addstr(posY + y, posX + x, ' ');
+      }
+    }
+    this.mainWin.refresh();
+  }
+};
+
+module.exports = Ncurses;
+
+},{"__browserify_process":13,"events":11,"ncurses":10}],3:[function(require,module,exports){
   module.exports = require('./Ncurses');
 if(typeof window == 'object') {
   module.exports = require('./Canvas');
 }
 
-},{"./Canvas":1,"./Ncurses":9}],3:[function(require,module,exports){
-var Logic = function(scr, field, tetro, loop) {
+},{"./Canvas":1,"./Ncurses":2}],4:[function(require,module,exports){
+var Game = function(scr, field, tetro, loop) {
   this.scr = scr;
   this.field = field;
   this.tetro = tetro;
@@ -116,329 +228,337 @@ var Logic = function(scr, field, tetro, loop) {
   //Accelerate the game on Keydown
   this.scr.on('keydown', (function(key) {
     //block more keys until next step is done
-//    this.scr.blockKeys = true;
+    //this.scr.blockKeys = true;
     this.action = key;
-    if(this.loop.speed != this.fast) {
+    if (this.loop.speed != this.fast) {
       this.loop.createInterval(this.fast, this.gameStep.bind(this));
-    }      
+    }
   }).bind(this));
   //Slow it down again on keyup
 };
 
-Logic.prototype.gameStep = function(){
+Game.prototype.gameStep = function() {
   // Call the function with pressed key name
-  if(this.action) {
-    console.log(this.action);
+  if (this.action) {
     this[this.action]();
     this.action = null;
   } else {
     this.down();
-    if(this.loop.speed == this.fast)
-    this.loop.createInterval(this.slow, this.gameStep.bind(this));
+    if (this.loop.speed == this.fast)
+      this.loop.createInterval(this.slow, this.gameStep.bind(this));
   }
   this.field.clearComplete();
   this.scr.render(this.field, this.tetro);
- // this.scr.blockKeys = false;
+  // this.scr.blockKeys = false;
 };
 
-Logic.prototype.down = function() {
+Game.prototype.down = function() {
   var randomnumber;
-  if(this.field.collideDown(this.tetro)) {
+  if (this.field.collideDown(this.tetro)) {
     this.field.update(this.tetro);
     this.tetro.posY = 0;
     this.tetro.posX = 4;
-    randomnumber = Math.floor(Math.random()*7),
+    randomnumber = Math.floor(Math.random() * 7),
     this.tetro.type = randomnumber;
   } else {
     this.tetro.posY++;
   }
 };
 
-Logic.prototype.up = function() {
-  console.log('up');
+Game.prototype.up = function() {
   this.tetro.rotate(false);
 };
 
 
-Logic.prototype.right = function() {
-  if(this.field.collideRight(this.tetro) === false) {
+Game.prototype.right = function() {
+  if (this.field.collideRight(this.tetro) === false) {
     this.tetro.posX++;
   }
 };
 
-Logic.prototype.left = function() {
- console.log('left');
-   if(this.field.collideLeft(this.tetro) === false) {
-      this.tetro.posX = this.tetro.posX - 1;
-    }
+Game.prototype.left = function() {
+  if (this.field.collideLeft(this.tetro) === false) {
+    this.tetro.posX = this.tetro.posX - 1;
+  }
 };
 
-module.exports = Logic;
+module.exports = Game;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+'use strict';
+
 /*
  * Loop
  * Game loop class
  */
-var Loop =  function() {
+var Loop = function() {
   this.speed = 0;
   this.interval = null;
   this.keyup = null;
 };
 
+module.exports = Loop;
+
 /*
  * createInterval
  * @spped is the timeInterval in miliseconds
- * @logic execute a game step 
+ * @logic execute a game step
  * @render render the game
  *
  */
 Loop.prototype.createInterval = function(speed, callback) {
-  if(this.interval) clearInterval(this.interval);
+  if (this.interval) clearInterval(this.interval);
   this.speed = speed;
   this.interval = setInterval((function() {
     callback();
   }).bind(this), this.speed);
 };
 
-module.exports = Loop;
+},{}],6:[function(require,module,exports){
+'use strict';
 
-},{}],5:[function(require,module,exports){
-var events = require('events'),
-    util = require('util');
+var events = require('events');
+var util = require('util');
 
 var Playfield = function() {
-    this.matrix = [];
-    this.colorMap = [];
-    this.width = 12;
-    this.height = 23;
-    this.color = 3;
-    this.colorMap = [];
-    var i = this.height;
-    while(i--){
-        this.matrix[i] = [];
-        this.colorMap[i] = [];
-        var j = this.width;
-        while(j--) {
-            if(i==(this.height-1) || j===0 || j==(this.width-1)) {
-                this.matrix[i][j] = 1;
-            } else {
-                this.matrix[i][j] = 0;
-            }
-            this.colorMap[i][j] = this.color;
-        }
+  this.matrix = [];
+  this.colorMap = [];
+  this.width = 12;
+  this.height = 23;
+  this.color = 3;
+  this.colorMap = [];
+  var i = this.height;
+  while (i--) {
+    this.matrix[i] = [];
+    this.colorMap[i] = [];
+    var j = this.width;
+    while (j--) {
+      if (i == (this.height - 1) ||  j === 0 || j == (this.width - 1)) {
+        this.matrix[i][j] = 1;
+      } else {
+        this.matrix[i][j] = 0;
+      }
+      this.colorMap[i][j] = this.color;
     }
+  }
 };
+
+module.exports = Playfield;
 
 Playfield.prototype = new events.EventEmitter();
 
 Playfield.prototype.collideLeft = function(tetri) {
-    var tetriMatrix = tetri.getMatrix();
-    var i = tetriMatrix.length;
-    var len = tetriMatrix[0].length;
-    while(i--) {
-        var j = len;
-        while(j--) {
-            if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX-1) + j] === 1) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
-Playfield.prototype.collideRight = function(tetri) {
-    var tetriMatrix = tetri.getMatrix();
-    var i = tetriMatrix.length;
-    var len = tetriMatrix[0].length;
-    while(i--) {
-        var j = len;
-        while(j--) {
-            if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i][(tetri.posX+1) + j] === 1) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
-
-Playfield.prototype.collideDown = function(tetri) {
-    var tetriMatrix = tetri.getMatrix();
-    var i = tetriMatrix.length;
-    var len = tetriMatrix[0].length;
-    while(i--) {
-        var j = len;
-        while(j--) {
-            if(tetriMatrix[i][j] === 1 &&
-                this.matrix[(tetri.posY+1) + i][tetri.posX + j] === 1) {
-                return true;
-            }
-        }
-    }
-    return false;
-};
-
-Playfield.prototype.collide = function(tetri) {
-    var tetriMatrix = tetri.getMatrix();
-    var i = tetriMatrix.length;
-    var len = tetriMatrix[0].length;
-    var collisionPos = [];
-    while(i--) {
-        var j = len;
-        while(j--) {
-            if(tetriMatrix[i][j] === 1 &&
-                this.matrix[tetri.posY + i] &&
-                this.matrix[tetri.posY + i][tetri.posX + j] === 1) {
-                return [ (tetri.posY + i),
-                         (tetri.posX + j)];
-            }
-        }
-    }
-    return false;
-};
-
-Playfield.prototype.update = function(tetri) {
-    var tetriMatrix = tetri.getMatrix(),
-        i = tetriMatrix.length,
-        len = tetriMatrix[0].length;
-
-    var rows = tetriMatrix.length;
-    // update the matrix
-    while(rows--) {
-        var cols = len;
-        while(cols--) {
-            if(tetriMatrix[rows][cols]==1) {
-                this.matrix[tetri.posY + rows][tetri.posX + cols] = 1;
-                this.colorMap[tetri.posY + rows][tetri.posX + cols] = tetri.getColor();
-            }
-        }
-    }
-    return true;
-};
-
-Playfield.prototype.getMatrix = function() {
-    return this.matrix;
-};
-
-Playfield.prototype.getColor = function() {
-    return this.color;
-};
-
-Playfield.prototype.clearComplete = function() {
-    var i = this.matrix.length-2;
-    for(i; i>=1; i--){
-      if(this.matrix[i].indexOf(0) == -1) {
-        var j = i;
-        for(j; j>=1; j--) {
-            this.matrix[j]=this.matrix[j-1];
-        }
-        this.matrix[0] = [1,0,0,0,0,0,0,0,0,0,0,1]; //0
+  var tetriMatrix = tetri.getMatrix();
+  var i = tetriMatrix.length;
+  var len = tetriMatrix[0].length;
+  var j;
+  while (i--) {
+    j = len;
+    while (j--) {
+      if (tetriMatrix[i][j] === 1 &&
+          this.matrix[tetri.posY + i][(tetri.posX - 1) + j] === 1) {
         return true;
       }
     }
-    return false;
+  }
+  return false;
 };
-module.exports = Playfield;
-},{"events":10,"util":14}],6:[function(require,module,exports){
-var events = require('events'),
-    util = require('util');
+
+Playfield.prototype.collideRight = function(tetri) {
+  var tetriMatrix = tetri.getMatrix();
+  var i = tetriMatrix.length;
+  var len = tetriMatrix[0].length;
+  while (i--) {
+    var j = len;
+    while (j--) {
+      if (tetriMatrix[i][j] === 1 &&
+          this.matrix[tetri.posY + i][(tetri.posX + 1) + j] === 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+Playfield.prototype.collideDown = function(tetri) {
+  var tetriMatrix = tetri.getMatrix();
+  var i = tetriMatrix.length;
+  var len = tetriMatrix[0].length;
+  while (i--) {
+    var j = len;
+    while (j--) {
+      if (tetriMatrix[i][j] === 1 &&
+        this.matrix[(tetri.posY + 1) + i][tetri.posX + j] === 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+Playfield.prototype.collide = function(tetri) {
+  var tetriMatrix = tetri.getMatrix();
+  var i = tetriMatrix.length;
+  var len = tetriMatrix[0].length;
+  var collisionPos = [];
+  while (i--) {
+    var j = len;
+    while (j--) {
+      if (tetriMatrix[i][j] === 1 &&
+          this.matrix[tetri.posY + i] &&
+          this.matrix[tetri.posY + i][tetri.posX + j] === 1) {
+        return [(tetri.posY + i), (tetri.posX + j)];
+      }
+    }
+  }
+  return false;
+};
+
+Playfield.prototype.update = function(tetri) {
+  var tetriMatrix = tetri.getMatrix();
+  var i = tetriMatrix.length;
+  var len = tetriMatrix[0].length;
+  var rows = tetriMatrix.length;
+  var cols;
+  // update the matrix
+  while (rows--) {
+    cols = len;
+    while (cols--) {
+      if (tetriMatrix[rows][cols] == 1) {
+        this.matrix[tetri.posY + rows][tetri.posX + cols] = 1;
+        this.colorMap[tetri.posY + rows][tetri.posX + cols] = tetri.getColor();
+      }
+    }
+  }
+  return true;
+};
+
+Playfield.prototype.getMatrix = function() {
+  return this.matrix;
+};
+
+Playfield.prototype.getColor = function() {
+  return this.color;
+};
+
+Playfield.prototype.clearComplete = function() {
+  var i = this.matrix.length - 2;
+  var j;
+  for (i; i >= 1; i--) {
+    if (this.matrix[i].indexOf(0) == -1) {
+      j = i;
+      for (j; j >= 1; j--) {
+        this.matrix[j] = this.matrix[j - 1];
+      }
+      this.matrix[0] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]; //0
+      return true;
+    }
+  }
+  return false;
+};
+
+
+},{"events":11,"util":15}],7:[function(require,module,exports){
+var events = require('events');
+var util = require('util');
 
 var Tetromino = function(pType, pPosX, pPosY) {
-    this.posX = pPosX || 5;
-    this.posY = pPosY || 0;
-    this.colors = [6, 63, 166, 4, 5, 1, 9];
-    this.type = pType || 0;
-    this.orientation = 0;
-    this.color = 6;
-    // SRS rotation system
-    this.grid = [
-        [
-            [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]], // I 6 pos 3
-            [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]], // I 6 pos 1
-            [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]], // I 6 pos 2
-            [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]  // I 6 pos 3
-        ],
-        [
-            [[1,0,0,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]], // J 63
-            [[0,1,1,0],[0,1,0,0],[0,1,0,0],[0,0,0,0]], // J 63
-            [[0,0,0,0],[1,1,1,0],[0,0,1,0],[0,0,0,0]], // J 63
-            [[0,1,0,0],[0,1,0,0],[1,1,0,0],[0,0,0,0]]  // J 63
-        ],
-        [
-            [[0,0,1,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]], // L 166
-            [[0,1,0,0],[0,1,0,0],[0,1,1,0],[0,0,0,0]], // L 166
-            [[0,0,0,0],[1,1,1,0],[1,0,0,0],[0,0,0,0]], // L 166
-            [[1,1,0,0],[0,1,0,0],[0,1,0,0],[0,0,0,0]]  // L 166
-        ],
-        [
-            [[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]], // O 4
-            [[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]], // O 4
-            [[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]], // O 4
-            [[0,0,0,0],[0,1,1,0],[0,1,1,0],[0,0,0,0]]  // O 4
-        ],
-        [
-            [[0,1,1,0],[1,1,0,0],[0,0,0,0],[0,0,0,0]], // S 2
-            [[0,1,0,0],[0,1,1,0],[0,0,1,0],[0,0,0,0]], // S 2
-            [[0,0,0,0],[0,1,1,0],[1,1,0,0],[0,0,0,0]], // S 2
-            [[1,0,0,0],[1,1,0,0],[0,1,0,0],[0,0,0,0]] // S 2
-        ],
-        [
-            [[0,1,0,0],[1,1,1,0],[0,0,0,0],[0,0,0,0]], // T 5
-            [[0,1,0,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]], // T 5
-            [[0,0,0,0],[1,1,1,0],[0,1,0,0],[0,0,0,0]], // T 5
-            [[0,1,0,0],[1,1,0,0],[0,1,0,0],[0,0,0,0]]  // T 5
-        ],
-        [
-            [[1,1,0,0],[0,1,1,0],[0,0,0,0],[0,0,0,0]], // Z 9
-            [[0,0,1,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]], // Z 9
-            [[0,0,0,0],[1,1,0,0],[0,1,1,0],[0,0,0,0]], // Z 9
-            [[0,1,0,0],[1,1,0,0],[1,0,0,0],[0,0,0,0]]  // Z 9
-        ]
-    ];
-};
-
-Tetromino.prototype = new events.EventEmitter();
-Tetromino.prototype.getMatrix = function() {
-    return this.grid[this.type][this.orientation];
-};
-
-Tetromino.prototype.rotate = function(pClockWise) {
-    if (typeof pClockWise === "undefined") { pClockWise = true; }
-    if(pClockWise === true || pClockWise === 'undefined') {
-        this.orientation++;
-        if(this.orientation > 3) {
-            this.orientation = 0;
-        }
-    } else if(pClockWise === false ) {
-        this.orientation--;
-        if(this.orientation < 0){
-            this.orientation = 3;
-        }
-    }
-    this.emit('rotating');
-};
-
-Tetromino.prototype.getColor = function() {
-    return this.colors[this.type];
+  this.posX = pPosX || 5;
+  this.posY = pPosY || 0;
+  this.colors = [6, 63, 166, 4, 5, 1, 9];
+  this.type = pType  || 0;
+  this.orientation = 0;
+  this.color = 6;
+  // SRS rotation system
+  this.grid = [
+    [
+      [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], // I 6 pos 3
+      [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]], // I 6 pos 1
+      [[0, 0, 0, 0], [0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0]], // I 6 pos 2
+      [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0]]  // I 6 pos 3
+    ],
+    [
+      [[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], // J 63
+      [[0, 1, 1, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]], // J 63
+      [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]], // J 63
+      [[0, 1, 0, 0], [0, 1, 0, 0], [1, 1, 0, 0], [0, 0, 0, 0]]  // J 63
+    ],
+    [
+      [[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], // L 166
+      [[0, 1, 0, 0], [0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]], // L 166
+      [[0, 0, 0, 0], [1, 1, 1, 0], [1, 0, 0, 0], [0, 0, 0, 0]], // L 166
+      [[1, 1, 0, 0], [0, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]]  // L 166
+    ],
+    [
+      [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], // O 4
+      [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], // O 4
+      [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]], // O 4
+      [[0, 0, 0, 0], [0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]  // O 4
+    ],
+    [
+      [[0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], // S 2
+      [[0, 1, 0, 0], [0, 1, 1, 0], [0, 0, 1, 0], [0, 0, 0, 0]], // S 2
+      [[0, 0, 0, 0], [0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0]], // S 2
+      [[1, 0, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]] // S 2
+    ],
+    [
+      [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], // T 5
+      [[0, 1, 0, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]], // T 5
+      [[0, 0, 0, 0], [1, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]], // T 5
+      [[0, 1, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]]  // T 5
+    ],
+    [
+      [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]], // Z 9
+      [[0, 0, 1, 0], [0, 1, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]], // Z 9
+      [[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]], // Z 9
+      [[0, 1, 0, 0], [1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 0]]  // Z 9
+    ]
+  ];
 };
 
 module.exports = Tetromino;
 
-},{"events":10,"util":14}],"uM18kj":[function(require,module,exports){
-module.exports.Interface = require('./Interface');
+Tetromino.prototype = new events.EventEmitter();
+
+Tetromino.prototype.rotate = function(pClockWise) {
+  if (typeof pClockWise === 'undefined') { pClockWise = true; }
+  if (pClockWise === true || pClockWise === 'undefined') {
+    this.orientation++;
+    if (this.orientation > 3) {
+      this.orientation = 0;
+    }
+  } else if (pClockWise === false) {
+    this.orientation--;
+    if (this.orientation < 0) {
+      this.orientation = 3;
+    }
+  }
+  this.emit('rotating');
+};
+
+Tetromino.prototype.getColor = function() {
+  return this.colors[this.type];
+};
+
+Tetromino.prototype.getMatrix = function() {
+  return this.grid[this.type][this.orientation];
+};
+
+},{"events":11,"util":15}],"uM18kj":[function(require,module,exports){
+'use strict';
+
+module.exports.Display = require('./Display');
 module.exports.Playfield = require('./Playfield');
 module.exports.Tetromino = require('./Tetromino');
 module.exports.Loop = require('./Loop');
-module.exports.Logic = require('./Logic');
+module.exports.Game = require('./Game');
 module.exports.io = require('socket.io-client');
 
-
-},{"./Interface":2,"./Logic":3,"./Loop":4,"./Playfield":5,"./Tetromino":6,"socket.io-client":15}],"lib":[function(require,module,exports){
+},{"./Display":3,"./Game":4,"./Loop":5,"./Playfield":6,"./Tetromino":7,"socket.io-client":16}],"lib":[function(require,module,exports){
 module.exports=require('uM18kj');
-},{}],9:[function(require,module,exports){
-
 },{}],10:[function(require,module,exports){
+
+},{}],11:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -740,7 +860,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -765,7 +885,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -820,14 +940,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var process=require("__browserify_process"),global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1415,7 +1535,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":13,"__browserify_process":12,"inherits":11}],15:[function(require,module,exports){
+},{"./support/isBuffer":14,"__browserify_process":13,"inherits":12}],16:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);

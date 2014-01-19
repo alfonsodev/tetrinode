@@ -1,39 +1,24 @@
-//Todo this if can be drop using NODE_PATH 
+'use strict';
 
-var Interface = require('lib').Interface;
+var Interface = require('lib').Display;
 var Tetromino = require('lib').Tetromino;
 var Playfield = require('lib').Playfield;
 var Loop = require('lib').Loop;
-var Logic = require('lib').Logic;
-var io = require('lib').io;
+var Menu = require('lib').Game.Menu;
+var config = { url: 'http://127.0.0.1:3000' };
+var Network = require('lib').Network;
 
 var scr = new Interface();
 var loop = new Loop();
 var field = new Playfield();
 var tetro = new Tetromino(2, 0, 0);
-var logic = new Logic(scr, field, tetro, loop);
+//var network = new Network(config);
 
+var game = new Game(scr, field, tetro, loop);
 
-/*
- * In tetris keydown is special because it acelerates the game.
- */
-
-// This only happends on the Terminal 
+// This only happends on the Terminal
 process.on('SIGINT', function() {
   clearInterval(loop.interval);
   scr.close();
-});
-
-var socket = io.connect('http://127.0.0.1:3000');
-socket.on('connect', function() {
-
-  socket.on('gameStep', function(data) {
-    console.log(data);
-  });
-
-  socket.on('disconnect', function(){
-
-  });
-
 });
 
