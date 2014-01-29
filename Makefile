@@ -1,6 +1,6 @@
 CWD = $(shell pwd)
 test:
-	mocha --reporter spec test/**/*
+	DEBUG=tetrinode-test* mocha --reporter spec test/**/*
 bro:
 	./node_modules/.bin/browserify  -u '$(CWD)/node_modules/ncurses/index.js' -u '$(CWD)/lib/Interface/Ncurses/index.js' -im  -r ./lib:lib > tetrinode.js
 play:

@@ -16,7 +16,10 @@
     "ncurses": "~0.4.1",
     "socket.io": "~0.9.16"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "assert": "~1.1.0",
+    "mocha": "~1.17.0"
+  },
   "scripts": {
     "test": "make test"
   },
