@@ -21,14 +21,16 @@ var options = [
 ];
 
 var menu = new Menu(dis, options);
-
+var Game, game;
 menu.show();
 
 menu.on('selection', function(selected) {
-  dis.mainWin.clear();
-  var Game = require('lib').Game.Mode[selected.module];
-  var game = new Game(dis, field, tetro, loop);
-  dis.mainWin.refresh();
+  Game = require('lib').Game.Mode[selected.module];
+  dis.wins[0].clear();
+  dis.wins[0].refresh();
+  setTimeout(function() {
+    game = new Game(dis, field, tetro, loop);
+  }, 200);
 });
 // This only happends on the Terminal
 process.on('SIGINT', function() {
