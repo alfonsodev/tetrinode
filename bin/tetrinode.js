@@ -11,7 +11,8 @@ var Network = require('lib').Network;
 var dis = new Display();
 var loop = new Loop();
 var field = new Playfield();
-var tetro = new Tetromino(2, 0, 0);
+var tetro = new Tetromino(0, 0, 0);
+var ghost = new Tetromino(0, 0, 0);
 //var network = new Network(config);
 
 var options = [
@@ -22,19 +23,19 @@ var options = [
 
 var menu = new Menu(dis, options);
 var Game, game;
-menu.show();
 
+menu.show();
 menu.on('selection', function(selected) {
   Game = require('lib').Game.Mode[selected.module];
-  dis.wins[0].clear();
-  dis.wins[0].refresh();
   setTimeout(function() {
-    game = new Game(dis, field, tetro, loop);
+    game = new Game(dis, field, tetro, ghost, loop);
   }, 200);
 });
+
 // This only happends on the Terminal
+/*
 process.on('SIGINT', function() {
   clearInterval(loop.interval);
   dis.close();
 });
-
+*/

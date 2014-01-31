@@ -14,7 +14,9 @@
     "benchmark": "~1.0.0",
     "browserify": "~3.20.0",
     "ncurses": "~0.4.1",
-    "socket.io": "~0.9.16"
+    "socket.io": "~0.9.16",
+    "keypress": "~0.2.1",
+    "charm": "~0.2.0"
   },
   "devDependencies": {
     "assert": "~1.1.0",

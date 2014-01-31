@@ -1,5 +1,9 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
+// mock node.js process.on
+process = {
+  on: function() {}
+};
+// 'use strict';
 var events = require('events');
 var Canvas = function() {
   this.blockKeys = false;
@@ -7,6 +11,7 @@ var Canvas = function() {
   this.fgCanvas = document.getElementById('foreground');
   this.bgctx = this.bgCanvas.getContext('2d');
   this.fgctx = this.fgCanvas.getContext('2d');
+  this.fgctx.font="20px Georgia";
   //Initial colors
   this.fgctx.fillStyle = '#000066';
   this.bgctx.fillStyle = '#006600';
@@ -16,9 +21,20 @@ var Canvas = function() {
     '38': 'up',
     '40': 'down',
     '37': 'left',
-    '39': 'right'
+    '39': 'right',
+    '13': 'enter',
+    '32': 'space'
   };
   this.lastKey = null;
+  this.wins = [
+    { 
+      clear: function() {
+        //this.bgCanvas.width = this.bgCanvas.width;
+      },
+      refresh: function() {
+      }
+    }
+  ];
 };
 
 module.exports = Canvas;
@@ -32,6 +48,7 @@ Canvas.prototype.hello = function() {
 Canvas.prototype.startListeningKeyEvents = function() {
   console.log('starting listnening');
   document.addEventListener('keydown', function(e) {
+    console.log(e.keyCode);
     if (!this.blockKeys) {
       if (this.keyMap[e.keyCode]) {
         this.emit('keydown', this.keyMap[e.keyCode]);
@@ -86,12 +103,28 @@ Canvas.prototype.printFgObject = function(pObject) {
   }
 };
 
-// mock node.js process.on
-process = {
-  on: function() {}
+Canvas.prototype.menu = function(options, highlight, x, y) {
+  var posX = x || 0;
+  var posY = y || 0;
+  var selected = highlight || 0;
+  var i, msg;
+  this.fgCanvas.width = this.fgCanvas.width;
+  for (i in options) {
+    posY = posY + 2;
+    if (selected == i) {
+      msg = '>' + options[i].title;
+//      this.wins[0].attrset(nc.colorPair(2));
+    } else {
+//      this.wins[0].attrset(nc.colorPair(1));
+      msg = options[i].title;
+    }
+    this.fgctx.fillText(msg, posX, posY);
+  }
+//  this.wins[0].refresh();
 };
 
-},{"events":11}],2:[function(require,module,exports){
+
+},{"events":14}],2:[function(require,module,exports){
 var process=require("__browserify_process");'use strict';
 var events = require('events');
 var nc = require('ncurses');
@@ -99,19 +132,42 @@ var nc = require('ncurses');
 var Ncurses = function() {
   var self = this;
   this.blockKeys = false;
-  this.mainWin = new nc.Window();
-  // this.bgw = new nc.Window(12, 20);
+  this.wins = [];
+  this.wins.push(new nc.Window());
+
   // KeyMap as property os now we can redefine keys "inmemory"
   // Todo: later let user save config to a file/localStorage
   this.keyMap = {
-  '259': 'up', '258': 'down', '260': 'left', '261': 'right'
-  };
+    '259': 'up', '258': 'down', '260': 'left', '261': 'right',
+    '32': 'space', '10': 'enter', '27': 'esc' };
   this.colorMap = { blue: 1, red: 2, yellow: 3, gree: 4 };
   nc.showCursor = false;
-  nc.colorPair(1, 5, 3);
+  var LILA = 93;
+  nc.colorPair(1, nc.colors.WHITE, nc.colors.BLACK);
+  // Main Color 
+  nc.colorPair(2, 201, LILA);
+  // Background
+  nc.colorPair(3, 243, 244);
+  // Cyan I tetromino
+  nc.colorPair(4, 30, 33);
+  // Orange J
+  nc.colorPair(6, 3, 172);
+  // Blue L
+  nc.colorPair(5, 21, 4);
+  // Yellow O  
+  nc.colorPair(7, 185, 184);
+  // Green s
+  nc.colorPair(8, 35, 34);
+  // Purple T
+  nc.colorPair(9, 201, LILA);
+  // Red z
+  nc.colorPair(10, 125, 124);
+  nc.colorPair(11, 0, 0);
 
-  this.mainWin.attrset(nc.colorPair(1));
+  this.wins[0].attrset(nc.colorPair(1));
 };
+
+module.exports = Ncurses;
 
 Ncurses.prototype = new events.EventEmitter();
 
@@ -120,32 +176,36 @@ Ncurses.prototype = new events.EventEmitter();
  * @fg {array} Paint this array to the foreground window
  * @bg {array} Paint this array to the background window
  */
-Ncurses.prototype.render = function(bg, fg) {
-  this.mainWin.clear();
+Ncurses.prototype.render = function(bg, fg, gh) {
+  this.wins[0].attrset(nc.colorPair(2));
+  this.wins[0].clear();
   this.printBgObject(bg);
   this.printFgObject(fg);
+  this.printFgObject(gh, true);
 //  this.print(fg);
-  this.mainWin.refresh();
+  this.wins[0].refresh();
 };
 
 Ncurses.prototype.startListeningKeyEvents = function() {
   var self = this;
-  this.mainWin.on('inputChar', function(charKey, charNum, isKey) {
+  this.wins[0].on('inputChar', function(charKey, charNum, isKey) {
     if (self.keyMap[charNum]) {
-      self.emit('keydown', self.keyMap[charNum]);
+      self.emit('keydown', self.keyMap[charNum], charNum);
+    } else {
+      self.emit('keydown', charNum + ':'+charNum+':'+isKey);
     }
   });
 };
 
 Ncurses.prototype.log = function(msg) {
-  this.mainWin.addstr(0, 0, '' + nc.maxColorPairs);
-  this.mainWin.close();
+  this.wins[0].addstr(0, 0, '' + nc.maxColorPairs);
+  this.wins[0].close();
   console.log(msg);
   process.exit(0);
 };
 
 Ncurses.prototype.close = function() {
-  this.mainWin.close();
+  this.wins[0].close();
 };
 
 Ncurses.prototype.print = function(pObject, transparent) {
@@ -155,13 +215,13 @@ Ncurses.prototype.print = function(pObject, transparent) {
   var color = this.colorMap[pObject.color] || 7;
   var i = 0, j = 0;
   var transparent = transparent || true;
-  //this.mainWin.attrset(nc.colorPair(2));
+  //this.wins[0].attrset(nc.colorPair(2));
   for (i = 0; i < matrix.length; i++) {
     for (j = 0; j < matrix[i].length; j++) {
       if (matrix[i][j] !== 0) {
         if (!transparent) color = pObject.colorMap[posY + i][posX + j];
-        this.mainWin.attrset(nc.colorPair(color));
-        this.mainWin.addstr(posY + i, posX + j, ' ');
+        this.wins[0].attrset(nc.colorPair(color));
+        this.wins[0].addstr(posY + i, posX + j, ' ');
       }
     }
   }
@@ -177,10 +237,15 @@ Ncurses.prototype.printBgObject = function(pObject) {
     x = matrix[0].length;
     while (x--) {
       if (matrix[y][x] != 0) {
-        this.mainWin.addstr(posY + y, posX + x, ' ');
+        this.wins[0].attrset(nc.colorPair(matrix[y][x] + 3));
+//        this.wins[0].attrset(nc.colorPair(2));
+        this.wins[0].addstr(posY + y, (posX + x) * 2, '[]');
+      } else {
+        this.wins[0].attrset(nc.colorPair(11));
+        this.wins[0].addstr(posY + y, (posX + x) * 2, '  ');
       }
     }
-    this.mainWin.refresh();
+    this.wins[0].refresh();
   }
 };
 
@@ -189,28 +254,83 @@ Ncurses.prototype.printFgObject = function(pObject, flag) {
   var posY = pObject.posY || 0;
   var matrix = pObject.getMatrix() || [0];
   var x = 0, y = 0;
+  var ghost = flag || false;
   y = matrix.length;
+  if(!ghost) 
+    this.wins[0].attrset(nc.colorPair(pObject.type + 4));
+  else
+    this.wins[0].attrset(nc.colorPair(1));
   while (y--) {
     x = matrix[0].length;
     while (x--) {
       if (matrix[y][x] != 0) {
-        this.mainWin.addstr(posY + y, posX + x, ' ');
+        this.wins[0].addstr(posY + y, (posX + x) * 2, '[]');
       }
     }
-    this.mainWin.refresh();
+    this.wins[0].refresh();
   }
+}
+
+Ncurses.prototype.menu = function(options, highlight, x, y) {
+  var posX = x || 0;
+  var posY = y || 0;
+  var selected = highlight || 0;
+  var i, msg;
+  this.wins[0].clear();
+  for (i in options) {
+    posY = posY + 2;
+    if (selected == i) {
+      msg = options[i].title;
+      this.wins[0].attrset(nc.colorPair(2));
+    } else {
+      this.wins[0].attrset(nc.colorPair(1));
+      msg = options[i].title;
+    }
+    this.wins[0].addstr(posY, posX, msg);
+  }
+  this.wins[0].refresh();
 };
 
-module.exports = Ncurses;
-
-},{"__browserify_process":13,"events":11,"ncurses":10}],3:[function(require,module,exports){
+},{"__browserify_process":16,"events":14,"ncurses":13}],3:[function(require,module,exports){
   module.exports = require('./Ncurses');
 if(typeof window == 'object') {
   module.exports = require('./Canvas');
 }
 
 },{"./Canvas":1,"./Ncurses":2}],4:[function(require,module,exports){
-var Game = function(scr, field, tetro, loop) {
+'use strict';
+var events = require('events');
+var Menu = function(display, menuOptions) {
+  this.selected = 0;
+  this.options = menuOptions;
+  this.display = display;
+  this.display.startListeningKeyEvents();
+  this.display.on('keydown', this.moveCursor.bind(this));
+};
+Menu.prototype = new events.EventEmitter();
+Menu.prototype.show = function() {
+  this.display.menu(this.options, this.selected, 0, 0);
+};
+
+Menu.prototype.moveCursor = function(key, num) {
+  if (key === 'down' && this.selected < this.options.length - 1) {
+    this.selected++;
+  } else if (key === 'up' && this.selected > 0) {
+    this.selected--;
+  } else if (key === 'enter') {
+    this.emit('selection', this.options[this.selected]);
+   // this.display.removeAllListeners('keydown');
+  }
+  this.show();
+};
+
+module.exports = Menu;
+
+},{"events":14}],5:[function(require,module,exports){
+var process=require("__browserify_process");'use strict';
+
+var Loop = require('lib').Loop;
+var Single = function(scr, field, tetro, ghost, loop) {
   this.scr = scr;
   this.field = field;
   this.tetro = tetro;
@@ -218,18 +338,26 @@ var Game = function(scr, field, tetro, loop) {
   this.fast = 70;
   this.slow = 1000;
   this.action = null;
+  this.ghost = ghost;
+
   // Todo: make this debug info optional
   // this.scr.write(2, 60, 'move L'+t[0] + ':'+ (t[1]*0.000001));
 
-  this.scr.startListeningKeyEvents();
-  this.scr.render(this.field, this.tetro);
+  //this.moveGhost();
+  // this.scr.startListeningKeyEvents();
+  this.scr.render(this.field, this.tetro, this.ghost);
   this.loop.createInterval(1000, this.gameStep.bind(this));
 
   //Accelerate the game on Keydown
+  this.scr.removeAllListeners('keydown');
   this.scr.on('keydown', (function(key) {
     //block more keys until next step is done
     //this.scr.blockKeys = true;
-    this.action = key;
+    if (key === 'space') {
+      this.action = 'drop';
+    } else {
+      this.action = key;
+    }
     if (this.loop.speed != this.fast) {
       this.loop.createInterval(this.fast, this.gameStep.bind(this));
     }
@@ -237,8 +365,11 @@ var Game = function(scr, field, tetro, loop) {
   //Slow it down again on keyup
 };
 
-Game.prototype.gameStep = function() {
+Single.prototype.gameStep = function() {
   // Call the function with pressed key name
+  var lines;
+//  this.moveGhost();
+  lines = this.field.clearComplete();
   if (this.action) {
     this[this.action]();
     this.action = null;
@@ -247,12 +378,14 @@ Game.prototype.gameStep = function() {
     if (this.loop.speed == this.fast)
       this.loop.createInterval(this.slow, this.gameStep.bind(this));
   }
-  this.field.clearComplete();
-  this.scr.render(this.field, this.tetro);
+  this.field.clearComplete()
+  process.nextTick(function() {
+    this.scr.render(this.field, this.tetro, this.ghost);
+  }.bind(this));
   // this.scr.blockKeys = false;
 };
 
-Game.prototype.down = function() {
+Single.prototype.down = function() {
   var randomnumber;
   if (this.field.collideDown(this.tetro)) {
     this.field.update(this.tetro);
@@ -260,31 +393,64 @@ Game.prototype.down = function() {
     this.tetro.posX = 4;
     randomnumber = Math.floor(Math.random() * 7),
     this.tetro.type = randomnumber;
+    this.ghost.type = randomnumber;
+    this.ghost.posY = this.tetro.posY;
+    this.ghost.posX = this.tetro.posX;
+    this.dropGhost();
   } else {
     this.tetro.posY++;
   }
 };
 
-Game.prototype.up = function() {
+Single.prototype.up = function() {
   this.tetro.rotate(false);
+  this.ghost.posY = this.tetro.posY;
+  this.ghost.rotate(false);
+  this.dropGhost();
 };
 
-
-Game.prototype.right = function() {
+Single.prototype.right = function() {
   if (this.field.collideRight(this.tetro) === false) {
     this.tetro.posX++;
+    this.ghost.posY = this.tetro.posY;
+    this.ghost.posX++;
+    this.dropGhost();
   }
 };
 
-Game.prototype.left = function() {
+Single.prototype.left = function() {
   if (this.field.collideLeft(this.tetro) === false) {
     this.tetro.posX = this.tetro.posX - 1;
+    this.ghost.posY = this.tetro.posY;
+    this.ghost.posX = this.ghost.posX - 1;
+    this.dropGhost();
   }
 };
 
-module.exports = Game;
+Single.prototype.drop = function() {
+  while (!this.field.collideDown(this.tetro)) {
+    this.tetro.posY++;
+  }
+};
 
-},{}],5:[function(require,module,exports){
+Single.prototype.dropGhost = function() {
+  while (!this.field.collideDown(this.ghost)) { this.ghost.posY++; }
+};
+
+
+module.exports = Single;
+
+},{"__browserify_process":16,"lib":"uM18kj"}],6:[function(require,module,exports){
+module.exports.Single = require('./Single.js');
+
+},{"./Single.js":5}],7:[function(require,module,exports){
+'use strict';
+
+//Menu loads game mode that exposed in Games/Mode/index.js
+module.exports.Menu = require('./Menu');
+module.exports.Mode = require('./Mode');
+
+},{"./Menu":4,"./Mode":6}],8:[function(require,module,exports){
 'use strict';
 
 /*
@@ -314,7 +480,7 @@ Loop.prototype.createInterval = function(speed, callback) {
   }).bind(this), this.speed);
 };
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 var events = require('events');
@@ -322,23 +488,19 @@ var util = require('util');
 
 var Playfield = function() {
   this.matrix = [];
-  this.colorMap = [];
   this.width = 12;
   this.height = 23;
   this.color = 3;
-  this.colorMap = [];
   var i = this.height;
   while (i--) {
     this.matrix[i] = [];
-    this.colorMap[i] = [];
     var j = this.width;
     while (j--) {
-      if (i == (this.height - 1) ||  j === 0 || j == (this.width - 1)) {
+      if (i == (this.height - 1) ||  j === 0 || j == (this.width - 1) ) {
         this.matrix[i][j] = 1;
       } else {
         this.matrix[i][j] = 0;
       }
-      this.colorMap[i][j] = this.color;
     }
   }
 };
@@ -355,8 +517,8 @@ Playfield.prototype.collideLeft = function(tetri) {
   while (i--) {
     j = len;
     while (j--) {
-      if (tetriMatrix[i][j] === 1 &&
-          this.matrix[tetri.posY + i][(tetri.posX - 1) + j] === 1) {
+      if (tetriMatrix[i][j] > 0 &&
+          this.matrix[tetri.posY + i][(tetri.posX - 1) + j] > 0) {
         return true;
       }
     }
@@ -371,8 +533,8 @@ Playfield.prototype.collideRight = function(tetri) {
   while (i--) {
     var j = len;
     while (j--) {
-      if (tetriMatrix[i][j] === 1 &&
-          this.matrix[tetri.posY + i][(tetri.posX + 1) + j] === 1) {
+      if (tetriMatrix[i][j] > 0 &&
+          this.matrix[tetri.posY + i][(tetri.posX + 1) + j] > 0) {
         return true;
       }
     }
@@ -383,12 +545,12 @@ Playfield.prototype.collideRight = function(tetri) {
 Playfield.prototype.collideDown = function(tetri) {
   var tetriMatrix = tetri.getMatrix();
   var i = tetriMatrix.length;
-  var len = tetriMatrix[0].length;
+  var j;
   while (i--) {
-    var j = len;
+    j = tetriMatrix[0].length;
     while (j--) {
-      if (tetriMatrix[i][j] === 1 &&
-        this.matrix[(tetri.posY + 1) + i][tetri.posX + j] === 1) {
+      if (tetriMatrix[i][j] > 0 &&
+        this.matrix[(tetri.posY + 1) + i][tetri.posX + j] > 0 ) {
         return true;
       }
     }
@@ -404,9 +566,9 @@ Playfield.prototype.collide = function(tetri) {
   while (i--) {
     var j = len;
     while (j--) {
-      if (tetriMatrix[i][j] === 1 &&
+      if (tetriMatrix[i][j] > 0 &&
           this.matrix[tetri.posY + i] &&
-          this.matrix[tetri.posY + i][tetri.posX + j] === 1) {
+          this.matrix[tetri.posY + i][tetri.posX + j] > 0) {
         return [(tetri.posY + i), (tetri.posX + j)];
       }
     }
@@ -425,8 +587,7 @@ Playfield.prototype.update = function(tetri) {
     cols = len;
     while (cols--) {
       if (tetriMatrix[rows][cols] == 1) {
-        this.matrix[tetri.posY + rows][tetri.posX + cols] = 1;
-        this.colorMap[tetri.posY + rows][tetri.posX + cols] = tetri.getColor();
+        this.matrix[tetri.posY + rows][tetri.posX + cols] = tetri.type + 1;
       }
     }
   }
@@ -440,25 +601,38 @@ Playfield.prototype.getMatrix = function() {
 Playfield.prototype.getColor = function() {
   return this.color;
 };
-
+/*
 Playfield.prototype.clearComplete = function() {
   var i = this.matrix.length - 2;
   var j;
+  var lines = [];
   for (i; i >= 1; i--) {
     if (this.matrix[i].indexOf(0) == -1) {
+      lines.push(i);
+      this.matrix[i] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]; //0
       j = i;
-      for (j; j >= 1; j--) {
-        this.matrix[j] = this.matrix[j - 1];
-      }
-      this.matrix[0] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]; //0
-      return true;
+      for (j; j >= 1; j--) { this.matrix[j] = this.matrix[j - 1]; }
+      //this.matrix[0] = ; //0
     }
   }
-  return false;
+};
+*/
+
+Playfield.prototype.clearComplete = function() {
+  var i = this.matrix.length - 2;
+  var count = 0;
+  for (i; i >= 1; i--) {
+    if (this.matrix[i].indexOf(0) == -1) {
+      this.matrix.splice(i, 1);
+      count++;
+    }
+  }
+  while (count--) {
+    this.matrix.unshift([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+  }
 };
 
-
-},{"events":11,"util":15}],7:[function(require,module,exports){
+},{"events":14,"util":18}],10:[function(require,module,exports){
 var events = require('events');
 var util = require('util');
 
@@ -544,7 +718,9 @@ Tetromino.prototype.getMatrix = function() {
   return this.grid[this.type][this.orientation];
 };
 
-},{"events":11,"util":15}],"uM18kj":[function(require,module,exports){
+},{"events":14,"util":18}],"lib":[function(require,module,exports){
+module.exports=require('uM18kj');
+},{}],"uM18kj":[function(require,module,exports){
 'use strict';
 
 module.exports.Display = require('./Display');
@@ -554,11 +730,9 @@ module.exports.Loop = require('./Loop');
 module.exports.Game = require('./Game');
 module.exports.io = require('socket.io-client');
 
-},{"./Display":3,"./Game":4,"./Loop":5,"./Playfield":6,"./Tetromino":7,"socket.io-client":16}],"lib":[function(require,module,exports){
-module.exports=require('uM18kj');
-},{}],10:[function(require,module,exports){
+},{"./Display":3,"./Game":7,"./Loop":8,"./Playfield":9,"./Tetromino":10,"socket.io-client":19}],13:[function(require,module,exports){
 
-},{}],11:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -860,7 +1034,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -885,7 +1059,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -940,14 +1114,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var process=require("__browserify_process"),global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};// Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -1535,7 +1709,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-},{"./support/isBuffer":14,"__browserify_process":13,"inherits":12}],16:[function(require,module,exports){
+},{"./support/isBuffer":17,"__browserify_process":16,"inherits":15}],19:[function(require,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
