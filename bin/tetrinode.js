@@ -33,9 +33,7 @@ menu.on('selection', function(selected) {
 });
 
 // This only happends on the Terminal
-/*
 process.on('SIGINT', function() {
   clearInterval(loop.interval);
   dis.close();
 });
-*/
