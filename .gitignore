@@ -3,3 +3,7 @@ node_modules/
 npm-debug.log
 
 .tern-project
+lib-cov/
+lcov-report/
+html-report/
+lcov.info
