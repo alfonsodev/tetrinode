@@ -72,7 +72,7 @@ collideLeft = function(tetri) {
 collideLeft2 = function(tetri) {
   var x;
   var m = tetri.getMatrix();
-  var edges = tetri.getEdges();
+  var edges = tetri.getEdges(3);
   x = edges[0]; 
   
   if (x >= 0 && this.matrix[tetri.posY][(tetri.posX + x - 1)] > 0) {
@@ -96,19 +96,45 @@ onSetup = function() {
   tetro = new Tetromino();
 };
 
+var collision = function(tetri, direction) {
+  var x;
+  var m = ref; 
+  var modes = [0, 1, 0, -1];
+  var edges = tetri.getEdges(direction);
+  x = edges[0];
+  if (x >= 0 && this.matrix[tetri.posY][(tetri.posX + x + -1)] > 0) {
+    return true;
+  }
+  x = edges[1];
+  if (x >= 0 && this.matrix[tetri.posY + 1][(tetri.posX + x + -1)] > 0) {
+    return true;
+  }
+  x = edges[2];
+  if (x >= 0 && this.matrix[tetri.posY + 2][(tetri.posX + x + -1)] > 0) {
+    return true;
+  }
+  x = edges[3];
+  if (x >= 0 && this.matrix[tetri.posY + 3][(tetri.posX + x + -1)] > 0) {
+    return true;
+  }
+  return false;
+};
 Benchmark('CollisionDetection', { setup: onSetup });
 var suite = new Benchmark.Suite;
 
 
 suite
-  .add('collideLeftWhile', function() {
+  .add('collideLeft-1', function() {
       collideLeftWhile(tetro);
     })
-  .add('collideLef', function() {
+  .add('collideLef-2', function() {
       collideLeft(tetro);
     })
-  .add('collideLef', function() {
+  .add('collide-2', function() {
       collideLeft2(tetro);
+    })
+  .add('collide-3', function() {
+      collision(tetro, 3);
     })
   .on('cycle', function(event) {
       benchmarks.add(event.target);
