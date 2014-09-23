@@ -6,6 +6,8 @@ COVERALLS=node_modules/coveralls/bin/coveralls.js
 TESTS=$(shell find test/unit -name "test*.js" -not -path "*service/*")
 SERVICETEST=$(shell find test/service/ -name "test*.js" )
 DEBUG=tetrinode-test*
+unit:
+	NODE_PATH=./ $(MOCHA) -R spec test/unit/TetrominoTest.js
 test:
 	NODE_PATH=./ $(MOCHA) -R spec $(TESTS)
 test-service:
