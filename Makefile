@@ -1,6 +1,7 @@
 CWD = $(shell pwd)
 MOCHA=node_modules/.bin/mocha
-ISTANBUL=node_modules/.bin/istanbul
+#ISTANBUL=node_modules/.bin/istanbul
+ISTANBUL=node_modules/mocha-istanbul/node_modules/.bin/istanbul
 COVERALLS=node_modules/coveralls/bin/coveralls.js
 TESTS=$(shell find test/unit -name "test*.js" -not -path "*service/*")
 SERVICETEST=$(shell find test/service/ -name "test*.js" )

@@ -14,6 +14,32 @@ var printM = function(matrix) {
 };
 
 describe('Tetromino', function() {
+  it('tetromino rotate clockwise', function() {
+    var tetro = new Tetromino();
+    assert.equal(0, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation);
+    assert.equal(1, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation);
+    assert.equal(2, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation);
+    assert.equal(3, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation);
+    assert.equal(0, tetro.orientation);
+  });
+
+  it('tetromino rotate anticlockwise', function() {
+    var tetro = new Tetromino();
+    assert.equal(0, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation, true);
+    assert.equal(3, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation, true);
+    assert.equal(2, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation, true);
+    assert.equal(1, tetro.orientation);
+    tetro.orientation = tetro.rotate(tetro.orientation, true);
+    assert.equal(0, tetro.orientation);
+  });
+
   it('constructor', function(done) {
     var tetro = new Tetromino();
     assert.strictEqual('object', typeof tetro);
