@@ -10,9 +10,9 @@ var Network = require('lib').Network;
 
 var dis = new Display();
 var loop = new Loop();
-var field = new Playfield();
-var tetro = new Tetromino(0, 0, 0);
-var ghost = new Tetromino(0, 0, 0);
+var field = Playfield();
+var tetro = Tetromino(0, 0, 0);
+var ghost = Tetromino(0, 0, 0);
 //var network = new Network(config);
 
 var options = [

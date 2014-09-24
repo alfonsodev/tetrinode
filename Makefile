@@ -1,13 +1,13 @@
 CWD = $(shell pwd)
 MOCHA=node_modules/.bin/mocha
-#ISTANBUL=node_modules/.bin/istanbul
+# ISTANBUL=node_modules/.bin/istanbul
 ISTANBUL=node_modules/mocha-istanbul/node_modules/.bin/istanbul
 COVERALLS=node_modules/coveralls/bin/coveralls.js
-TESTS=$(shell find test/unit -name "test*.js" -not -path "*service/*")
+TESTS=$(shell find test/unit -name "*Test.js" -not -path "*service/*")
 SERVICETEST=$(shell find test/service/ -name "test*.js" )
 DEBUG=tetrinode-test*
 unit:
-	NODE_PATH=./ $(MOCHA) -R spec test/unit/TetrominoTest.js
+	NODE_PATH=./ $(MOCHA) -R spec test/unit/PlayfieldTest.js
 test:
 	NODE_PATH=./ $(MOCHA) -R spec $(TESTS)
 test-service:
