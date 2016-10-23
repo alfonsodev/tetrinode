@@ -10,13 +10,12 @@
     "test": "test"
   },
   "dependencies": {
-    "beautify-benchmark": "~0.2.4",
-    "benchmark": "~1.0.0",
-    "browserify": "~3.20.0",
-    "ncurses": "~0.4.1",
-    "socket.io": "~0.9.16",
-    "keypress": "~0.2.1",
-    "charm": "~0.2.0"
+    "beautify-benchmark": "^0.2.4",
+    "benchmark": "^2.1.1",
+    "browserify": "^13.1.1",
+    "charm": "^1.0.1",
+    "keypress": "^0.2.1",
+    "socket.io": "^1.5.0"
   },
   "devDependencies": {
     "assert": "~1.1.0",
